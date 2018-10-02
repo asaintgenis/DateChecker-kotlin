@@ -1,6 +1,7 @@
 package org.codeshuffle.datechecker.controller
 
 import org.codeshuffle.datechecker.constant.DateType
+import org.codeshuffle.datechecker.exception.LegacyTypeException
 import org.codeshuffle.datechecker.mapper.DateMapper
 import org.codeshuffle.datechecker.model.DateRequest
 import org.codeshuffle.datechecker.model.DateResponse
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.text.ParseException
 import javax.validation.Valid
+
+
 
 @RestController
 @RequestMapping("/api")
@@ -33,6 +36,9 @@ class DateController(val dateService: DateService, val legacyDateService: Legacy
             DateType.ZONED_DATETIME -> {
                 dateResponse = dateMapper.convertZoneDateTimeToDateResponse(dateService.checkAndParseZonedDateTime(dateRequest.pattern, dateRequest.dateToParse))
 
+            }
+            DateType.LEGACY -> {
+                throw LegacyTypeException("DateType LEGACY cannot be use to call /date endpoint")
             }
         }
         val resource = Resource<DateResponse>(dateResponse)
