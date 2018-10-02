@@ -1,5 +1,6 @@
 package org.codeshuffle.datechecker.controller
 
+import org.codeshuffle.datechecker.mapper.DateMapper
 import org.codeshuffle.datechecker.model.DateRequest
 import org.codeshuffle.datechecker.model.DateResponse
 import org.codeshuffle.datechecker.service.DateService
@@ -16,13 +17,12 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api")
-class DateController(val dateService: DateService, val legacyDateService: LegacyDateService) {
+class DateController(val dateService: DateService, val legacyDateService: LegacyDateService, val dateMapper: DateMapper) {
     @PostMapping("/date")
     @Throws(ParseException::class)
     fun getDate(@Valid @RequestBody dateRequest: DateRequest): Resource<DateResponse> {
-        val localDate = dateService.checkAndParseDate(dateRequest.pattern, dateRequest.dateToParse)
-        val dateResponse = DateResponse(localDate.year.toString(), localDate.month.toString(), localDate.dayOfMonth.toString())
-
+        val zonedDateTime = dateService.checkAndParseDate(dateRequest.pattern, dateRequest.dateToParse)
+        val dateResponse = dateMapper.convertZoneDateTimeToDateResponse(zonedDateTime)
         val resource = Resource<DateResponse>(dateResponse)
         val linkTo = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(this.javaClass).getLegacyDate(dateRequest))
         resource.add(linkTo.withRel("legacy-date"))
@@ -34,7 +34,7 @@ class DateController(val dateService: DateService, val legacyDateService: Legacy
     @Throws(ParseException::class)
     fun getLegacyDate(@Valid @RequestBody dateRequest: DateRequest): Resource<DateResponse> {
         val date = legacyDateService.checkAndParseDate(dateRequest.pattern, dateRequest.dateToParse)
-        val dateResponse = DateResponse(date.get(Calendar.YEAR).toString(), date.get(Calendar.MONTH).toString(), date.get(Calendar.DAY_OF_MONTH).toString())
+        val dateResponse = dateMapper.convertDateToDateResponse(date)
 
         val resource = Resource<DateResponse>(dateResponse)
         val linkTo = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(this.javaClass).getDate(dateRequest))
