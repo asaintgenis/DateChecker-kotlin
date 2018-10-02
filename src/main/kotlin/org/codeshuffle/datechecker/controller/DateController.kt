@@ -1,5 +1,6 @@
 package org.codeshuffle.datechecker.controller
 
+import org.codeshuffle.datechecker.constant.DateType
 import org.codeshuffle.datechecker.mapper.DateMapper
 import org.codeshuffle.datechecker.model.DateRequest
 import org.codeshuffle.datechecker.model.DateResponse
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.text.ParseException
-import java.util.*
 import javax.validation.Valid
 
 @RestController
@@ -21,8 +21,20 @@ class DateController(val dateService: DateService, val legacyDateService: Legacy
     @PostMapping("/date")
     @Throws(ParseException::class)
     fun getDate(@Valid @RequestBody dateRequest: DateRequest): Resource<DateResponse> {
-        val zonedDateTime = dateService.checkAndParseDate(dateRequest.pattern, dateRequest.dateToParse)
-        val dateResponse = dateMapper.convertZoneDateTimeToDateResponse(zonedDateTime)
+        val dateResponse: DateResponse
+        when(dateRequest.dateType) {
+            DateType.LOCAL_DATE -> {
+                dateResponse = dateMapper.convertLocalDateToDateResponse(dateService.checkAndParseLocalDate(dateRequest.pattern, dateRequest.dateToParse))
+            }
+            DateType.LOCAL_DATETIME -> {
+                dateResponse = dateMapper.convertLocalDateTimeToDateResponse(dateService.checkAndParseLocalDateTime(dateRequest.pattern, dateRequest.dateToParse))
+
+            }
+            DateType.ZONED_DATETIME -> {
+                dateResponse = dateMapper.convertZoneDateTimeToDateResponse(dateService.checkAndParseZonedDateTime(dateRequest.pattern, dateRequest.dateToParse))
+
+            }
+        }
         val resource = Resource<DateResponse>(dateResponse)
         val linkTo = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(this.javaClass).getLegacyDate(dateRequest))
         resource.add(linkTo.withRel("legacy-date"))

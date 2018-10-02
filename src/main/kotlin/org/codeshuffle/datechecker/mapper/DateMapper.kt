@@ -2,10 +2,11 @@ package org.codeshuffle.datechecker.mapper
 
 import org.codeshuffle.datechecker.model.DateResponse
 import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.TextStyle
 import java.util.*
-import java.util.GregorianCalendar
 import java.util.Calendar
 
 
@@ -20,7 +21,23 @@ class DateMapper {
                 zonedDateTime.minute.toString(),
                 zonedDateTime.second.toString(),
                 zonedDateTime.nano.toString(),
-                zonedDateTime.zone.getDisplayName(TextStyle.NARROW_STANDALONE, Locale.ENGLISH))
+                zonedDateTime.zone.getDisplayName(TextStyle.FULL_STANDALONE, Locale.ENGLISH))
+    }
+
+    fun convertLocalDateTimeToDateResponse(localDateTime: LocalDateTime) : DateResponse {
+        return DateResponse(localDateTime.year.toString(),
+                localDateTime.month.toString(),
+                localDateTime.dayOfMonth.toString(),
+                localDateTime.hour.toString(),
+                localDateTime.minute.toString(),
+                localDateTime.second.toString(),
+                localDateTime.nano.toString())
+    }
+
+    fun convertLocalDateToDateResponse(localDate: LocalDate) : DateResponse {
+        return DateResponse(localDate.year.toString(),
+                localDate.month.toString(),
+                localDate.dayOfMonth.toString())
     }
 
     fun convertDateToDateResponse(calendar: Calendar) : DateResponse {

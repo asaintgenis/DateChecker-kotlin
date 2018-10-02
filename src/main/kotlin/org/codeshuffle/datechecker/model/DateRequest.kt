@@ -1,3 +1,5 @@
 package org.codeshuffle.datechecker.model
 
-data class DateRequest(val pattern: String, val dateToParse: String);
+import org.codeshuffle.datechecker.constant.DateType
+
+data class DateRequest(val pattern: String, val dateToParse: String, val dateType: DateType)
